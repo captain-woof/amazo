@@ -1,0 +1,45 @@
+{
+  "name": "amazo",
+  "version": "1.0.0",
+  "description": "A price-tracker for Amazon; see how product prices fluctuate on Amazon and know the best time to buy. :)",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js",
+    "dev": "concurrently -k \"nodemon .\" \"cd ./client/ && npm start\"",
+    "dev_backend": "nodemon .",
+    "dev_frontend": "cd ./client/ && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/captain-woof/amazo.git"
+  },
+  "keywords": [
+    "Amazon",
+    "price",
+    "tracker",
+    "amazo"
+  ],
+  "author": "Sohail Saha (aka CaptainWoof)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/captain-woof/amazo/issues"
+  },
+  "homepage": "https://github.com/captain-woof/amazo#readme",
+  "dependencies": {
+    "amazon-buddy": "^2.2.37",
+    "connect-mongo": "^4.4.1",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "formidable": "^1.2.2",
+    "mongoose": "^5.13.7",
+    "nodemailer": "^6.6.3"
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.1",
+    "dotenv": "^10.0.0",
+    "nodemon": "^2.0.12"
+  }
+}
