@@ -1,25 +1,19 @@
-const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 const mongoose = require('mongoose')
 const Product = require('./models/product')
+const crypto = require('crypto')
 
 // VARS
 const currencies = JSON.parse(fs.readFileSync(path.join(__dirname, "currencies.json").toString()))
-const ccs = []
-for (var i = 0; i < currencies.length; i++) { ccs.push(currencies[i].cc) }
 
 // FUNCTIONS
-const getHash = (password) => {
-    return crypto.createHash('sha3-512').update(password).digest('hex')
-}
-
 const getCurrencyByCC = (cc) => {
     return currencies.find((currency) => { return currency.cc == cc })
 }
 
 const getAllCurrencyCC = () => {
-    return ccs
+    return currencies
 }
 
 const removeInArray = (arr, ele) => {
@@ -46,12 +40,11 @@ const getRandomHexString = (len) => {
 
 const collectAllProductPrices = () => {
     Product.collectAllProductPrices()
-        .then((result) => { console.log(`${Date.now()} -> ${result.message}`) })
+        .then((result) => { console.log(result.message) })
         .catch((err) => { console.log(err.message) })
 }
 
 module.exports = {
-    getHash: getHash,
     getCurrencyByCC: getCurrencyByCC,
     getAllCurrencyCC: getAllCurrencyCC,
     removeInArray: removeInArray,

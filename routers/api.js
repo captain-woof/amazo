@@ -15,24 +15,25 @@ router.post("/register", (req, res) => {
     var form = formidable()
     form.parse(req, (err, fields, files) => {
         if (err) {
-            res.json({ status: "ERROR", message: err }).end()
+            res.status(500).json({ status: "ERROR", message: err }).end()
         }
         // Check if user exists
         User.findUserByEmail(fields.email).then((userDocs) => {
             if (userDocs) { // If user exists
-                res.json({ status: "ERROR", message: "User already exists!" }).status(403).end()
+                res.status(403).json({ status: "ERROR", message: "User already exists!" }).end()
             } else { // If user does not exist
                 User.createNewUser(fields.name, fields.email, fields.currency, fields.password)
                     .then((result, err) => {
                         if (err) {
-                            res.json(err).status(500).end()
+                            res.status(500).json(err).end()
                         } else {
-                            res.json(result).status(200).end()
+                            req.session.email = fields.email
+                            res.status(200).json(result).end()
                         }
                     })
             }
         }).catch((err) => {
-            res.json(err).status(500).end()
+            res.status(500).json(err).end()
         })
     })
 })
@@ -42,10 +43,10 @@ router.get("/deleteAccount", (req, res) => {
     // Check if user is logged in
     if (req.session.email) {
         User.deleteUser(req.session.email)
-            .then((result) => { res.json(result).status(200).end() })
-            .catch((err) => { res.json(err).status(500).end() })
+            .then((result) => { res.status(200).json(result).end() })
+            .catch((err) => { res.status(500).json(err).end() })
     } else {
-        res.json({ status: "ERROR", message: "User is not logged in!" }).status(401).end()
+        res.status(401).json({ status: "ERROR", message: "User is not logged in!" }).end()
     }
 })
 
@@ -58,9 +59,9 @@ router.get("/sendResetPassword/:email", (req, res) => {
             // That page will create a POST req to "/api/resetPassword" (look at below route)
 
 
-            res.json(result).status(200).end()
+            res.status(200).json(result).end()
         })
-        .catch((err) => { res.json(err).status(403).end() })
+        .catch((err) => { res.status(403).json(err).end() })
 })
 
 // Router - Change password (POST: email, key, newPassword)
@@ -68,18 +69,18 @@ router.post("/resetPassword", (req, res) => {
     var form = formidable()
     form.parse(req, (err, fields, files) => {
         if (err) {
-            res.json(err).status(500).end()
+            res.status(500).json(err).end()
         } else {
             // Validate if reset password key is correct
             ChangePasswordEntry.validateChangePasswordEntry(fields.email, fields.key)
                 .then((result) => {
                     // Change password
-                    User.changePassword(fields.email, utils.getHash(fields.newPassword))
+                    User.changePassword(fields.email, User.getSha3Hash(fields.newPassword))
                         .then((result) => {
-                            res.json(result).status(200).end()
+                            res.status(200).json(result).end()
                         })
                 })
-                .catch((err) => { res.json(err).status(403).end() })
+                .catch((err) => { res.status(403).json(err).end() })
         }
     })
 })
@@ -88,20 +89,20 @@ router.post("/resetPassword", (req, res) => {
 router.post("/login", (req, res) => {
     // If user is already logged in, reject further login
     if (req.session.email) {
-        res.json({ status: "ERROR", message: "Already logged in!" }).status(403).end()
+        res.status(403).json({ status: "ERROR", message: "Already logged in!" }).end()
     } else {
         // Get data from body
         var form = formidable()
         form.parse(req, (err, fields, files) => {
             if (err) {
-                res.json({ status: "ERROR", message: err }).status(500).end()
+                res.status(500).json({ status: "ERROR", message: err }).end()
             } else {
                 // Check if credentials are valid
                 User.checkUserCreds(fields.email, fields.password).then((result) => {
                     req.session.email = fields.email
-                    res.json(result).status(200).end()
+                    res.status(200).json(result).end()
                 }).catch((err) => {
-                    res.json(err).status(500).end()
+                    res.status(401).json(err).end()
                 })
             }
         })
@@ -114,35 +115,43 @@ router.get("/logout", (req, res) => {
         var email = req.session.email
         req.session.destroy(() => {
             console.log(`User with email '${email}' logged out`)
-            res.json({ status: "OK", message: "Logout successful!" }).status(200).end()
+            res.status(200).json({
+                status: "OK",
+                message: "Logout successful!",
+                redirect: "/"
+            }).end()
         })
     } else { // If user isn't logged in
-        res.json({ status: "ERROR", message: "User not logged in!" }).status(403).end()
+        res.status(403).json({
+            status: "ERROR",
+            message: "You are not logged in!",
+            redirect: "/"
+        }).end()
     }
 })
 
 // Route - Get All Currency CC
 router.get("/getAllCurrencyCC", (req, res) => {
-    res.send(utils.getAllCurrencyCC()).status(200).end()
+    res.status(200).send(utils.getAllCurrencyCC()).end()
 })
 
 // Route - Search Currency by CC
 router.get("/searchCurrencyByCC/:cc", (req, res) => {
     var currency = utils.getCurrencyByCC(req.params.cc)
     if (currency) { // If currency exists
-        res.send(currency).status(200).end()
+        res.status(200).send(currency).end()
     } else { // If currency does not exist
-        res.json({
+        res.status(404).json({
             status: "ERROR",
             message: `No currency found with CC ${req.params.cc}`
-        }).status(404).end()
+        }).end()
     }
 })
 
 // Route - Add product (POST: productUrl)
 router.post("/subscribeToProduct", (req, res) => {
     if (!req.session.email) { // If user is not logged in
-        res.json({ status: "ERROR", message: "You must be logged in to add product!" }).status(401).end()
+        res.status(401).json({ status: "ERROR", message: "You must be logged in to add product!" }).end()
         return
     }
     var form = formidable()
@@ -150,20 +159,20 @@ router.post("/subscribeToProduct", (req, res) => {
         // Get user's currency and product ASIN
         User.findUserByEmail(req.session.email).then((currentUserDoc) => {
             if (err) {
-                res.json({ status: "ERROR", message: err }).status(500).end()
+                res.status(500).json({ status: "ERROR", message: err }).end()
             } else if (!currentUserDoc) {
-                res.json({ status: "ERROR", message: "User not found!" }).status(404).end()
+                res.status(404).json({ status: "ERROR", message: "User not found!" }).end()
             } else {
                 var asin = fields.productUrl.match(/\/dp\/(\w{10})/)[1]
 
                 Product.addNewProduct(asin, currentUserDoc).then((response) => {
-                    res.json(response).status(200).end()
+                    res.status(200).json(response).end()
                 }).catch((err) => {
-                    res.json(err).status(500).end()
+                    res.status(500).json(err).end()
                 })
             }
         }).catch((err) => {
-            res.json(err).status(500).end()
+            res.status(500).json(err).end()
         })
     })
 })
@@ -171,7 +180,7 @@ router.post("/subscribeToProduct", (req, res) => {
 // Route - Unsubscribe from product (POST: productObjectIdString)
 router.post("/unsubscribeToProduct", (req, res) => {
     if (!req.session.email) {
-        res.json({ status: "ERROR", message: "User not logged in!" }).status(401).end()
+        res.status(401).json({ status: "ERROR", message: "User not logged in!" }).end()
     } else {
         var form = formidable()
         form.parse(req, (err, fields, files) => {
@@ -179,12 +188,12 @@ router.post("/unsubscribeToProduct", (req, res) => {
             User.findUserByEmail(req.session.email).then((userDoc) => {
                 userDoc.unsubscribeFromProduct(utils.stringToObjectId(fields.productObjectIdString))
                     .then((result) => {
-                        res.json(result).status(200).end()
+                        res.status(200).json(result).end()
                     }).catch((err) => {
-                        res.json(err).status(403).end()
+                        res.status(403).json(err).end()
                     })
             }).catch((err) => {
-                res.json(err).status(500).end()
+                res.status(500).json(err).end()
             })
         })
     }
@@ -193,15 +202,23 @@ router.post("/unsubscribeToProduct", (req, res) => {
 // Route - Get All subscribed products
 router.get("/getAllSubscribedProducts", (req, res) => {
     if (!req.session.email) {
-        res.json({ status: "ERROR", message: "User not logged in!" }).status(401).end()
+        res.status(401).json({ status: "ERROR", message: "User not logged in!" }).end()
     } else {
         User.findUserByEmail(req.session.email)
             .then((userDoc) => {
                 userDoc.getSubscribedProducts()
-                    .then((subscribedProducts) => { res.json(subscribedProducts).status(200).end() })
-                    .catch((err) => { res.json(err).status(403).end() })
+                    .then((subscribedProducts) => { res.status(200).json(subscribedProducts).end() })
+                    .catch((err) => { res.status(403).json(err).end() })
             })
-            .catch((err) => { res.json(err).status(403).end() })
+            .catch((err) => { res.status(403).json(err).end() })
+    }
+})
+
+router.get("/isLoggedIn", (req, res) => {
+    if (req.session.email) {
+        res.status(200).json({ status: "OK", message: true }).end()
+    } else {
+        res.status(200).json({ status: "OK", message: false }).end()
     }
 })
 

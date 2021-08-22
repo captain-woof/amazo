@@ -212,6 +212,6 @@ productSchema.statics.collectAllProductPrices = function () {
     })
 }
 
-const Product = mongoose.model("Product", productSchema)
+const Product = mongoose.model("Product", productSchema, 'products')
 
 module.exports = Product

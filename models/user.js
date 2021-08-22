@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const utils = require('../utils')
 const Product = require('./product')
+const crypto = require('crypto')
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -24,7 +25,7 @@ userSchema.methods.subscribeToProduct = function (productObjectId, asin) {
 
 userSchema.statics.findUserByEmail = function (email) {
     return new Promise((resolve, reject) => {
-        this.findOne({ email: email }, (err, userDoc) => {
+        User.findOne({ email: email }, (err, userDoc) => {
             if (err) {
                 console.log(err)
                 reject({ status: "ERROR", message: err })
@@ -41,15 +42,19 @@ userSchema.statics.createNewUser = function (name, email, currency, password) {
             name: name,
             email: email,
             currency: currency,
-            password: utils.getHash(password)
+            password: User.getSha3Hash(password)
         })
         newUser.save((err) => {
             if (err) {
                 console.log(err)
                 reject({ status: "ERROR", message: err })
             } else {
-                console.log(`New user added with email: ${email}`)
-                resolve({ status: "OK", message: "User added!" })
+                console.log(`New user signed up with email: ${email}`)
+                resolve({
+                    status: "OK",
+                    message: "You've successfully signed-up!",
+                    redirect: "/dashboard"
+                })
             }
         })
     })
@@ -58,15 +63,15 @@ userSchema.statics.createNewUser = function (name, email, currency, password) {
 userSchema.statics.checkUserCreds = function (email, password) {
     return new Promise((resolve, reject) => {
         User.findOne({
-            $and: [{ email: email }, { password: utils.getHash(password) }]
+            $and: [{ email: email }, { password: User.getSha3Hash(password) }]
         }, (err, userDoc) => {
             if (err) {
                 reject({ status: "ERROR", message: err })
             } else if (userDoc) { // If valid credential
                 console.log(`User with email '${email}' logged in`)
-                resolve({ status: "OK", message: "Login successful!" })
+                resolve({ status: "OK", message: "Login successful!", redirect: "/dashboard" })
             } else { // If invalid credential
-                reject({ status: "ERROR", message: "Invalid credential!" })
+                reject({ status: "ERROR", message: "Wrong email/password!" })
             }
         })
     })
@@ -154,6 +159,10 @@ userSchema.methods.getSubscribedProducts = function () {
     })
 }
 
-const User = mongoose.model("User", userSchema)
+userSchema.statics.getSha3Hash = (password) => {
+    return crypto.createHash('sha3-512').update(password).digest('hex')
+}
+
+const User = mongoose.model("User", userSchema, 'users')
 
 module.exports = User

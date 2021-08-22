@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node main.js",
-    "dev": "concurrently -k \"nodemon .\" \"cd ./client/ && npm start\"",
-    "dev_backend": "nodemon .",
+    "dev": "concurrently -k \"npm run dev_backend\" \"npm run dev_frontend\"",
+    "dev_backend": "nodemon --ignore 'client/*' .",
     "dev_frontend": "cd ./client/ && npm start"
   },
   "repository": {
