@@ -13,6 +13,7 @@ import Footer from '../common/footer'
 
 const DashboardContainer = styled(motion.div)`
     width: 100vw;
+    height: 100vh;
 `
 
 const dashboardContainerVariant = {
@@ -93,26 +94,28 @@ export default function Dashboard() {
     }, [invokeFetchProducts])
 
     return (
-        <DashboardContainer id="dashboard-container" variants={dashboardContainerVariant}
-            animate="animate" exit="exit" initial="initial">
-            <AnimateSharedLayout type='crossfade'>
-                <CommonHeader pageTitle="Dashboard" needShadow />
-                <AddProductBox invokeFetchProducts={invokeFetchProducts} />
-                <Title style={{ fontSize: (isPhone ? "42px" : "64px"), textAlign: (isPhone ? "center" : null) }}
-                    layout>
-                    Your products
-                </Title>
-                <AnimatePresence>
-                    {!hasContentLoaded ?
-                        <Loading statusText={contentLoadedStatus} /> :
-                        (subscribedProducts.length !== 0
-                            ? <SubscribedProducts subscribedProducts={subscribedProducts}
-                                invokeFetchProducts={invokeFetchProducts} />
-                            : <NoProductFound layout>No products tracked!</NoProductFound>)
-                    }
-                </AnimatePresence>
-            </AnimateSharedLayout>
+        <>
+            <DashboardContainer id="dashboard-container" variants={dashboardContainerVariant}
+                animate="animate" exit="exit" initial="initial">
+                <AnimateSharedLayout type='crossfade'>
+                    <CommonHeader pageTitle="Dashboard" needShadow />
+                    <AddProductBox invokeFetchProducts={invokeFetchProducts} />
+                    <Title style={{ fontSize: (isPhone ? "42px" : "64px"), textAlign: (isPhone ? "center" : null) }}
+                        layout>
+                        Your products
+                    </Title>
+                    <AnimatePresence>
+                        {!hasContentLoaded ?
+                            <Loading statusText={contentLoadedStatus} /> :
+                            (subscribedProducts.length !== 0
+                                ? <SubscribedProducts subscribedProducts={subscribedProducts}
+                                    invokeFetchProducts={invokeFetchProducts} />
+                                : <NoProductFound layout>No products tracked!</NoProductFound>)
+                        }
+                    </AnimatePresence>
+                </AnimateSharedLayout>
+            </DashboardContainer>
             <Footer />
-        </DashboardContainer>
+        </>
     )
 }
