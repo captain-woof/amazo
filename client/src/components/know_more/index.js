@@ -127,8 +127,8 @@ export default function KnowMore() {
             <CommonHeader needShadow pageTitle="Know more" />
             <Link style={{ textAlign: 'center', marginTop: '16px', fontFamily: 'raleway', color: primary }} to='/faq'>If you've questions, read the FAQ!</Link>
             <TextContainer id='what-is-brown-track'>
-                <Image float='right' src={HomepagePic} variants={picVariant} />
                 <Title isPhone={isPhone} variants={textVariant}>What is Brown-Track?</Title>
+                <Image float='right' src={HomepagePic} variants={picVariant} />
                 <Text variants={textVariant}>
                     <p>
                         Brown-Track is a <b>free</b> price-tracker for Amazon. You use it to <b>get an idea what's the lowest the price of a product can fall to, then wait for that to happen to make the purchase.</b> <ALink href="#how-it-all-works">Brown-Track does things differently than other similar trackers out there.</ALink>
@@ -149,8 +149,8 @@ export default function KnowMore() {
             </TextContainer>
 
             <TextContainer id='the-dashboard'>
-                <Image float='left' src={DashboardPic} variants={picVariant} />
                 <Title isPhone={isPhone} variants={textVariant}>The dashboard</Title>
+                <Image float='left' src={DashboardPic} variants={picVariant} />
                 <Text variants={textVariant}>
                     <p>
                         Once you signup and log in to your dashboard, you will see an empty space. That is because you haven't added any product to track yet. <b>All you need is the product's url on Amazon.</b> Copy the url from there, paste it here, and the product will be added.
@@ -168,8 +168,8 @@ export default function KnowMore() {
             </TextContainer>
 
             <TextContainer id='email-notifications'>
-                <Image float='right' src={EmailPic} variants={picVariant} />
                 <Title isPhone={isPhone} variants={textVariant}>Email notifications</Title>
+                <Image float='right' src={EmailPic} variants={picVariant} />
                 <Text variants={textVariant}>
                     <p>
                         When Brown-Track starts tracking a product, it also notes who is tracking it, and adds them to a mailing list to email them if the product they are tracking has been observed to have the least price that day since the day it started tracking the product.
