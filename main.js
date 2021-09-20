@@ -55,11 +55,22 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
         saveUninitialized: false
     }))
 
+    // Build path
+    const buildPath = path.join(__dirname, "client", "build")
+
     //// For routers
     app.use("/api", api_router)
     //// For static files
-    app.use(express.static(path.join(__dirname, "client", "build")))
-    
+    app.use(express.static(buildPath))
+    //// For routes
+    app.get('/*', function (req, res) {
+        res.sendFile(path.join(buildPath, 'index.html'), function (err) {
+            if (err) {
+                res.status(500).send(err)
+            }
+        })
+    })
+
     //// Starting server
     let listenPort = process.env.PORT || 8000
     app.listen(listenPort, () => {
