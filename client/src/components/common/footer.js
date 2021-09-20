@@ -27,11 +27,11 @@ const Link = styled.a`
     color: ${offwhite};
 `
 
-export default function Footer() {
+export default function Footer({style}) {
     const isPhone = useContext(IsPhoneContext)
 
     return (
-        <FooterContainer isPhone={isPhone} id="footer">
+        <FooterContainer style={style} isPhone={isPhone} id="footer">
             <CreditText isPhone={isPhone}>
                 Brown-Track is owned and run by <Link href="https://sohail-saha.in" target='_blank'>Sohail Saha</Link>.
             </CreditText>

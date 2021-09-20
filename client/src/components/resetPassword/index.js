@@ -50,6 +50,7 @@ const Status = styled.div`
 	margin-top: 42px;
 	width: 60%;
 	text-align: center;
+	margin-bottom: 42px;
 `
 
 const resetPasswordContainerVariants = {
@@ -150,22 +151,25 @@ export default function ResetPassword() {
 	// If url is /resetPassword, show input field for email
 	// If urls is /resetPassword/EMAIL/KEY, show new password input field
 	return (
-		<ResetPasswordContainer id="reset-pw-container" variants={resetPasswordContainerVariants} initial='initial'
-			animate='animate' exit='exit'>
-			<CommonHeader pageTitle='Reset' />
-			<Heading id="reset-pw-heading">{resetKey ? "New password" : "Your email"}</Heading>
-			<Field id="reset-pw-input-field" isPhone={isPhone} type={resetKey ? 'password' : 'text'}
-				placeholder={resetKey ? "Enter new password" : "Enter your email"}
-				value={fieldText} onChange={(e) => { setFieldText(e.target.value) }} />
-			<Button id="reset-pw-btn" whileHover={{ backgroundColor: primaryLight }}
-				onClick={() => {
-					resetKey
-						? setNewPassword(email, fieldText, resetKey, setStatus, history)
-						: sendResetEmail(fieldText, setStatus)
-				}
-				}>Go</Button>
-			<Status id="reset-pw-status">{status}</Status>
-			<Footer />
-		</ResetPasswordContainer>
+		<>
+			<ResetPasswordContainer id="reset-pw-container" variants={resetPasswordContainerVariants} initial='initial'
+				animate='animate' exit='exit'>
+				<CommonHeader pageTitle='Reset' />
+				<Heading id="reset-pw-heading">{resetKey ? "New password" : "Your email"}</Heading>
+				<Field id="reset-pw-input-field" isPhone={isPhone} type={resetKey ? 'password' : 'text'}
+					placeholder={resetKey ? "Enter new password" : "Enter your email"}
+					value={fieldText} onChange={(e) => { setFieldText(e.target.value) }} />
+				<Button id="reset-pw-btn" whileHover={{ backgroundColor: primaryLight }}
+					onClick={() => {
+						resetKey
+							? setNewPassword(email, fieldText, resetKey, setStatus, history)
+							: sendResetEmail(fieldText, setStatus)
+					}
+					}>Go</Button>
+				<Status id="reset-pw-status">{status}</Status>
+
+			</ResetPasswordContainer>
+			<Footer style={{marginTop: '100vh'}}/>
+		</>
 	)
 }
