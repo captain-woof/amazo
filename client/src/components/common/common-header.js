@@ -5,6 +5,7 @@ import { easeInOutCubicBezier } from "../../utils"
 import IsPhoneContext from '../../contexts/isPhoneContext'
 import { useContext, useMemo } from "react"
 import LogoSvg from '../../static/images/logo.svg'
+import { useHistory } from 'react-router-dom'
 
 const CommonHeaderContainer = styled.div`
     width: 100vw;
@@ -22,6 +23,7 @@ const LogoAndBrownTrackHeadingContainer = styled(motion.div)`
     display: flex;
     flex-direction: row;
     margin: 12px;
+    cursor: pointer;
 `
 
 const Logo = styled.img`
@@ -48,6 +50,8 @@ export default function CommonHeader({ pageTitle, needShadow = false }) {
     // For isPhone context
     const isPhone = useContext(IsPhoneContext)
 
+    const history = useHistory()
+
     const headerVariants = useMemo(() => ({
         initial: {
             x: (isPhone ? 72 : 120),
@@ -66,7 +70,7 @@ export default function CommonHeader({ pageTitle, needShadow = false }) {
     return (
         <CommonHeaderContainer needShadow={needShadow} isPhone={isPhone}>
             <LogoAndBrownTrackHeadingContainer variants={headerVariants} animate="animate"
-                initial="initial">
+                initial="initial" onClick={() => { history.push('/') }}>
                 <Logo id="header-brown-track-logo" src={LogoSvg} />
                 {!isPhone &&
                     <BrownTrackHeading id="header-brown-track-text" >Brown-Track</BrownTrackHeading>
