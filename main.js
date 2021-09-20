@@ -59,10 +59,7 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
     app.use("/api", api_router)
     //// For static files
     app.use(express.static(path.join(__dirname, "client", "build")))
-    //// For everything else (React frontend)
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "client", "build", "index.html"))
-    })
+    
     //// Starting server
     let listenPort = process.env.PORT || 8000
     app.listen(listenPort, () => {
