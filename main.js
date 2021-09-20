@@ -57,12 +57,12 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
 
     //// For routers
     app.use("/api", api_router)
+    //// For static files
+    app.use("/static", express.static(path.join(__dirname, "client", "build")))
     //// For everything else (React frontend)
     app.get("*", (req, res) => {
         res.sendFile(path.join(__dirname, "client", "build", "index.html"))
     })
-    //// For static files
-    app.use(express.static(path.join(__dirname, "client", "build")))
     //// Starting server
     let listenPort = process.env.PORT || 8000
     app.listen(listenPort, () => {
@@ -71,13 +71,13 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
 
     // For starting collection process
     // Interval: 24 hours
-    setInterval(utils.collectAllProductPrices,24*60*60*1000)
+    setInterval(utils.collectAllProductPrices, 24 * 60 * 60 * 1000)
 
     // For removing expired password reset data
     // Interval: 1 minute
-    setInterval(utils.removeExpiredPasswordResetData, 60*1000)
+    setInterval(utils.removeExpiredPasswordResetData, 60 * 1000)
 
     // For going through all products, and reporting to users if there product
     // has the least price today
-    setInterval(utils.searchAndNotifyProductsWithMinPriceToday, 24*60*60*1000)
+    setInterval(utils.searchAndNotifyProductsWithMinPriceToday, 24 * 60 * 60 * 1000)
 })
