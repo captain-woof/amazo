@@ -59,7 +59,7 @@ router.get("/sendResetPassword/:email", (req, res) => {
         .then(({ status, email, name, key }) => {
             // If entry creation succeeds, send email to user with reset instructions
             if (status === 'OK') {
-                utils.sendPasswordResetEmail(email, name, `https://brown-track.com/resetPassword/${email}/${key}`)
+                utils.sendPasswordResetEmail(email, name, `https://brown-track.herokuapp.com/resetPassword/${email}/${key}`)
             }
             res.status(200).json({ status: "OK" }).end()
         })
