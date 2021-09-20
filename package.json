@@ -8,7 +8,7 @@
     "start": "node --tls-min-v1.0 main.js",
     "dev": "concurrently -k \"npm run dev_backend\" \"npm run dev_frontend\"",
     "dev_backend": "nodemon --ignore 'client/*' .",
-    "dev_frontend": "cd ./client/ && npm dev",
+    "dev_frontend": "cd ./client/ && npm run dev",
     "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
   },
   "repository": {
