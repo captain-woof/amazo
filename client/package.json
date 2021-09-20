@@ -1,6 +1,6 @@
 {
   "name": "brown-track-frontend",
-  "homepage": "https://brown-track.herokuapp.com/",
+  "homepage": ".",
   "version": "1.0.0",
   "private": false,
   "dependencies": {
