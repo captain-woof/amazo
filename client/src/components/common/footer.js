@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { offwhite, primaryLight } from '../../colors'
-import { useContext } from 'react/cjs/react.development'
+import { useContext } from 'react'
 import IsPhoneContext from '../../contexts/isPhoneContext'
 
 const FooterContainer = styled.div`

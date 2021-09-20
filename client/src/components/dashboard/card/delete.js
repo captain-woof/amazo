@@ -5,7 +5,7 @@ import DeleteIcon from '../../../static/logos/delete_logo.svg'
 import { easeOutCubicBezier } from "../../../utils"
 import { showPromiseNotification } from '../../common/notification'
 import { useCallback } from 'react'
-import { useContext } from 'react/cjs/react.development'
+import { useContext } from 'react'
 import IsPhoneContext from '../../../contexts/isPhoneContext'
 
 const DeleteButtonContainer = styled(motion.div)`

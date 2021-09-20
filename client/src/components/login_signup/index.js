@@ -6,7 +6,7 @@ import Login from './Login/index'
 import Signup from './Signup/index'
 import BackgroundImage from "../../static/images/background.jpg"
 import BackgroundCredits from '../common/background-credits'
-import { useContext } from 'react/cjs/react.development'
+import { useContext } from 'react'
 import IsPhoneContext from '../../contexts/isPhoneContext'
 
 const LoginSignupContainer = styled(motion.div)`

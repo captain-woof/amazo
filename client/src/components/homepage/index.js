@@ -7,7 +7,7 @@ import HomepageButtons from "./Homepage Buttons/index"
 import Ball from "./Ball"
 import BackgroundImage from '../../static/images/background.jpg'
 import BackgroundCredits from "../common/background-credits"
-import { useContext, useEffect } from "react/cjs/react.development"
+import { useContext, useEffect } from "react"
 import IsPhoneContext from "../../contexts/isPhoneContext"
 
 const HomepageContainer = styled(motion.div)`
