@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const scraper = require('amazon-buddy')
-const User = require('./user')
 const utils = require('../utils')
 
 const productSchema = new mongoose.Schema({
@@ -58,8 +57,7 @@ productSchema.statics.findProductByObjectId = function (productObjectId) {
         Product.findById(productObjectId, (err, productDoc) => {
             if (err) {
                 reject({ status: "ERROR", message: err })
-            }
-            else if (!productDoc) {
+            } else if (!productDoc) {
                 reject({ status: "ERROR", message: "No such product exists in database!" })
             } else {
                 resolve(productDoc)
@@ -73,37 +71,40 @@ productSchema.statics.addNewProduct = function (asin, currentUserDoc) {
         // Check if product has been already added
         Product.findProductByAsin(asin).then((currentProductDoc) => {
             if (!currentProductDoc) { // If product has not been added
-                Product.scrapeProduct(asin, currentUserDoc.currency).then(({ productTitle, productDescription,
-                    productThumbnail, productPrice }) => {
-                    // Add product to database
-                    var newProduct = new Product({
-                        asin: asin,
-                        title: productTitle,
-                        description: productDescription,
-                        thumbnail: productThumbnail,
-                        url: `https://amazon.com/dp/${asin}`,
-                        prices: [{
-                            currency_cc: currentUserDoc.currency,
-                            price: [{
-                                date: Date.now(),
-                                price: productPrice
+                Product.scrapeProduct(asin, currentUserDoc.currency)
+                    .then(({ productTitle, productDescription, productThumbnail, productPrice }) => {
+                        // Add product to database
+                        var newProduct = new Product({
+                            asin: asin,
+                            title: productTitle,
+                            description: (productDescription.length > 97 ?
+                                productDescription.slice(0, 97) + "..." :
+                                productDescription),
+                            thumbnail: productThumbnail,
+                            url: `https://amazon.com/dp/${asin}`,
+                            prices: [{
+                                currency_cc: currentUserDoc.currency,
+                                price: [{
+                                    date: Date.now(),
+                                    price: productPrice
+                                }]
                             }]
-                        }]
-                    })
-                    newProduct.save((err) => {
-                        if (err) {
-                            console.log(err)
-                            reject({ status: "ERROR", message: err })
-                        } else {
-                            // Add product to current User
-                            var response = currentUserDoc.subscribeToProduct(newProduct._id, asin)
+                        })
+                        newProduct.save((err) => {
+                            if (err) {
+                                console.log(err)
+                                reject({ status: "ERROR", message: err })
+                            } else {
+                                // Add product to current User
+                                var response = currentUserDoc.subscribeToProduct(newProduct._id, asin)
 
-                            // Log result and respond
-                            console.log(`Product (ASIN: ${asin}) with currency ${currentUserDoc.currency} added successfully!`)
-                            resolve(response)
-                        }
+                                // Log result and respond
+                                console.log(`Product (ASIN: ${asin}) with currency ${currentUserDoc.currency} added successfully!`)
+                                resolve(response)
+                            }
+                        })
                     })
-                })
+                    .catch((err) => { reject({ status: "ERROR", message: err }) })
             } else if (!currentProductDoc.prices.find((priceEntry) => {
                 return priceEntry.currency_cc == currentUserDoc.currency
             })) {
@@ -204,9 +205,10 @@ productSchema.statics.collectAllProductPrices = function () {
                                 priceEle.price.push({ date: Date.now(), price: productPrice })
                                 productDoc.save()
                             })
+                            .catch((err) => { reject({ status: "ERROR", message: err }) })
                     })
                 })
-                resolve({status: "OK", message: "All product prices have been/will be updated!"})
+                resolve({ status: "OK", message: "All product prices have been/will be updated!" })
             }
         })
     })

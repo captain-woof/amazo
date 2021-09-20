@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const utils = require('../utils')
-const Product = require('./product')
 const crypto = require('crypto')
+const moment = require('moment')
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -17,9 +17,9 @@ userSchema.methods.subscribeToProduct = function (productObjectId, asin) {
         this.productsTracking.push(productObjectId)
         this.save()
         console.log(`User with email '${this.email}' subscribed to ASIN '${asin}'`)
-        return { status: "OK", message: `Successfully subscribed to ASIN ${asin}` }
+        return { status: "OK", message: `New product added to tracker!` }
     } else {
-        return { status: "ERROR", message: "User already subscribed to the product!" }
+        return { status: "ERROR", message: "You are already tracking the product!" }
     }
 }
 
@@ -96,8 +96,6 @@ userSchema.statics.isAnyUserSubscribedToProductUnderCurrency = function (product
 
 userSchema.methods.unsubscribeFromProduct = function (productObjectId) {
     return new Promise((resolve, reject) => {
-        console.log(this.productsTracking)
-        console.log(productObjectId)
         if (this.productsTracking.indexOf(productObjectId) !== -1) { // If user is subscribed to the product
             this.productsTracking.pull(productObjectId)
             this.save((err) => {
@@ -105,7 +103,7 @@ userSchema.methods.unsubscribeFromProduct = function (productObjectId) {
                     reject({ status: "ERROR", message: err })
                 } else {
                     // Clean up
-                    Product.removeUnsubscribedProduct(productObjectId, this.currency).then((result) => {
+                    mongoose.model('Product').removeUnsubscribedProduct(productObjectId, this.currency).then((result) => {
                         resolve({ status: "OK", message: "Successfully unsubscribed from product!" })
                     }).catch((err) => {
                         reject(err)
@@ -113,7 +111,7 @@ userSchema.methods.unsubscribeFromProduct = function (productObjectId) {
                 }
             })
         } else { // If user is not subscribed to product
-            reject({ status: "ERROR", message: "User is not subscribed to product!" })
+            reject({ status: "ERROR", message: "You are not subscribed to product!" })
         }
     })
 }
@@ -140,19 +138,44 @@ userSchema.statics.changePassword = function (email, newPasswordHash) {
 
 userSchema.methods.getSubscribedProducts = function () {
     return new Promise((resolve, reject) => {
+        /* Each user is subscribed to an array of products (accessible by 'productsTracking')
+        This array contains objectIds. Use these ObjectIds to find the products being referred to.
+        Assign these products to 'subscribedProducts' array. This array contains JSON objects like
+        {asin, title, description, thumbnail, url, prices} (prices just is an array of {date, price})
+        */
         var subscribedProducts = []
-        var findProductPromises = []
+
+        // Get each productObjectId, and get Promises that will resolve to productDocs
+        var getProductDocsPromises = []
         this.productsTracking.forEach((productObjectId) => {
-            findProductPromises.push(Product.findProductByObjectId(productObjectId))
+            getProductDocsPromises.push(mongoose.model('Product').findProductByObjectId(productObjectId))
         })
-        Promise.all(findProductPromises)
-            .then((allProducts) => {
-                allProducts.forEach((productDoc) => {
-                    subscribedProducts.push(
-                        (productDoc.prices.find((priceEle) => {
-                            return priceEle.currency_cc === this.currency
-                        })).price)
+        // Now resolve all stored Promises and get all productDocs        
+        Promise.all(getProductDocsPromises)
+            .then((productDocs) => {
+                productDocs.forEach((productDoc) => {
+                    // Get dats of product prices, format them
+                    let prices = []
+                    productDoc.prices.find((priceEle) => {
+                        return priceEle.currency_cc === this.currency
+                    }).price.forEach((priceArrEle) => {
+                        prices.push({
+                            price: priceArrEle.price,
+                            date: moment(priceArrEle.date).format("DD MMM YYYY")
+                        })
+                    })
+                    subscribedProducts.push({
+                        asin: productDoc.asin,
+                        title: productDoc.title,
+                        description: productDoc.description,
+                        thumbnail: productDoc.thumbnail,
+                        url: productDoc.url,
+                        prices: prices,
+                        productObjectId: productDoc._id.toString()
+                    })
                 })
+            }).then(() => {
+                // Now resolve with the result
                 resolve(subscribedProducts)
             })
             .catch((err) => { reject(err) })

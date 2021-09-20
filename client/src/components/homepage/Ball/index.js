@@ -2,10 +2,12 @@ import styled from "styled-components"
 import { motion } from 'framer-motion'
 import Colors from "../../../colors"
 import { easeInOutCubicBezier } from "../../../utils"
+import IsPhoneContext from '../../../contexts/isPhoneContext'
+import { useContext } from "react"
 
 const AnimatingBall = styled(motion.div)`
     position: absolute;
-    background-color: ${Colors.greenLightPrimary};
+    background-color: ${Colors.primaryLight};
     border-radius: 50%;
     z-index: 1;
 `
@@ -18,7 +20,7 @@ const animatingBallVariant = {
     },
     animate: {
         opacity: 1,
-        x: 75,
+        x: 64,
         scale: 1.1,
         transition: {
             duration: 1.3,
@@ -27,7 +29,10 @@ const animatingBallVariant = {
     }
 }
 
-export default function Ball({isPhone}) {
+export default function Ball() {
+    // For isPhone context
+    const isPhone = useContext(IsPhoneContext)
+
     return (
         <AnimatingBall variants={animatingBallVariant} id="homepage-animating-ball"
         style={{

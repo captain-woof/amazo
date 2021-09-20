@@ -1,13 +1,12 @@
 import styled from 'styled-components'
 import { motion, useAnimation } from 'framer-motion'
-import Colors from "../../colors"
+import { offwhite, primaryLight, secondary, white } from "../../colors"
 import { easeOutCubicBezier, easeInOutCubicBezier } from "../../utils"
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const HamburgerIconContainer = styled(motion.div)`
     position: absolute;
     top: 12px;
-    right: 16px;
     border-radius: 50%;
     width: 42px;
     height: 42px;
@@ -20,17 +19,17 @@ const HamburgerIconContainer = styled(motion.div)`
 
 const iconAnimationVariants = {
     initial: {
-        fill: Colors.offwhite
+        fill: white,
     },
     offToOn: {
-        fill: Colors.greenPrimary,
+        fill: offwhite,
         transition: {
             ease: easeOutCubicBezier,
             duration: 1
         }
     },
     onToOff: {
-        fill: Colors.offwhite,
+        fill: white,
         transition: {
             ease: easeOutCubicBezier,
             duration: 1
@@ -40,32 +39,32 @@ const iconAnimationVariants = {
 
 const iconContainerAnimationVariants = {
     initial: {
-        rotateZ: "-60deg",
         opacity: 0,
-        x: -50,
-        backgroundColor: Colors.greenPrimary
+        rotateZ: -70,
+        right: '72px',
+        backgroundColor: secondary
     },
     animate: {
-        rotateZ: "0deg",
         opacity: 1,
-        x: 0,
+        rotateZ: 0,
+        right: '12px',
         transition: {
             ease: easeInOutCubicBezier,
-            delay: 2.8,
-            duration: 1
+            delay: 2.3,
+            duration: 1.5
         }
     },
     offToOn: {
-        rotateZ: "-180deg",
-        backgroundColor: Colors.offwhite,
+        rotateZ: -180,
+        backgroundColor: primaryLight,
         transition: {
             ease: easeOutCubicBezier,
             duration: 1
         }
     },
     onToOff: {
-        rotateZ: "0deg",
-        backgroundColor: Colors.greenPrimary,
+        rotateZ: 0,
+        backgroundColor: secondary,
         transition: {
             ease: easeOutCubicBezier,
             duration: 1
@@ -82,22 +81,26 @@ const iconContainerAnimationVariants = {
 
 export default function HamburgerIcon({ isMenuActivated, changeIsMenuActivated }) {
     const animation = useAnimation()
+    const [isInitialAnimationComplete, setIsInitialAnimationComplete] = useState(false)
 
     const toggleMenuHandler = () => {
         changeIsMenuActivated(!isMenuActivated)
     }
 
     useEffect(() => {
-        animation.start("animate")
+        (async () => {
+            await animation.start("animate")
+            setIsInitialAnimationComplete(true)
+        })()
     }, [animation])
 
     useEffect(() => {
         if (isMenuActivated) {
             animation.start("offToOn")
         } else {
-            animation.start("onToOff")
+            isInitialAnimationComplete && animation.start("onToOff")
         }
-    }, [isMenuActivated, animation])
+    }, [isMenuActivated, animation, isInitialAnimationComplete])
 
     return (
         <HamburgerIconContainer id="hamburger-icon-container" variants={iconContainerAnimationVariants} animate={animation} whileTap="whileTap" initial="initial" onClick={toggleMenuHandler}>

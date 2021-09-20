@@ -1,7 +1,13 @@
 module.exports = {
-    greenPrimary: "#396b13",
-    greenLightPrimary: "#396b1322",
-    greenDarkPrimary: "#2a4e0e",
+    primary: "#db4c40",
+    primaryLight: "#e27066",
+    primaryDark: "#af3d33",
     offwhite: "#f9f9f9",
-    blackSecondary: "#212121"
+    white: '#ffffff',
+    black: "#212121",
+    blackLight: "#a0a0a0",
+    grey: "#6b717e",
+    red: "#Ff4934",
+    green: '#2dff00',
+    secondary: '#fadf7f'
 }

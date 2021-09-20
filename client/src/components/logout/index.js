@@ -2,9 +2,12 @@ import LoadingLogo from "../../static/logos/loading_animation.svg"
 import Colors from "../../colors"
 import { motion } from 'framer-motion'
 import styled from 'styled-components'
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
+import { easeInCubicBezier } from "../../utils"
+import UserContext from "../../contexts/userContext"
+import { useHistory } from 'react-router-dom'
 
-const LogoutContainer = styled.div`
+const LogoutContainer = styled(motion.div)`
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -12,12 +15,35 @@ const LogoutContainer = styled.div`
     justify-content: center;
     align-items: center;
     background-color: ${Colors.offwhite};
+    position: absolute;
+    top: 0px;
+    left: 0px;
 `
+
+const logoutContainerVariant = {
+    initial: {
+        x: "100vw",
+    },
+    animate: {
+        x: "0vw",
+        transition: {
+            duration: 1,
+            ease: easeInCubicBezier,
+        }
+    },
+    exit: {
+        x: "-100vw",
+        transition: {
+            ease: easeInCubicBezier,
+            duration: 1
+        }
+    }
+}
 
 const LoggingOutText = styled(motion.div)`
     font-family: 'raleway';
     font-size: 28px;
-    color: ${Colors.blackSecondary};
+    color: ${Colors.black};
     margin-left: 16px;
 `
 
@@ -34,7 +60,13 @@ const loggingOutTextVariant = {
     }
 }
 
-export default function Logout({ changeIsLoggedIn }) {
+export default function Logout() {
+    // User context
+    const { fetchAndSetUserContextState } = useContext(UserContext)
+
+    // History from react router
+    const history = useHistory()
+
     const [statusText, changestatusText] = useState("Logging out...")
 
     useEffect(() => {
@@ -45,21 +77,21 @@ export default function Logout({ changeIsLoggedIn }) {
             }).then((response) => {
                 response.json().then((responseJson) => {
                     if (response.ok) {
-                        changeIsLoggedIn(false)
-                        document.location = responseJson.redirect
+                        fetchAndSetUserContextState().then(() => { history.push("/") })
                     } else {
                         changestatusText(responseJson.message)
                         setTimeout(() => {
-                            document.location = responseJson.redirect
+                            history.push("/")
                         }, 1500)
                     }
                 })
             })
         }, 1500)
-    }, [changeIsLoggedIn])
+    }, [fetchAndSetUserContextState, history])
 
     return (
-        <LogoutContainer id="logout-container">
+        <LogoutContainer id="logout-container" variants={logoutContainerVariant} initial="initial"
+            animate="animate" exit="exit">
             <img id="loading-logo" src={LoadingLogo} alt="Loading animation" style={{
                 width: "100px",
                 height: "100px"

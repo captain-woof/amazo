@@ -12,12 +12,12 @@ const ButtonContainer = styled(motion.div)`
     font-family: 'raleway';
     cursor: pointer;
     text-align: center;
-    background-color: ${Colors.greenPrimary};
+    background-color: ${Colors.primary};
 `
 
 const buttonVariant = {
     whileHover: {
-        backgroundColor: Colors.greenDarkPrimary,
+        backgroundColor: Colors.primaryDark,
         transition: {
             duration: 0.5,
             ease: easeInOutCubicBezier

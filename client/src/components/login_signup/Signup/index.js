@@ -3,7 +3,10 @@ import { motion } from 'framer-motion'
 import Colors from "../../../colors"
 import { easeInOutCubicBezier } from "../../../utils"
 import Button from "../common/button"
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
+import { useHistory, Link } from 'react-router-dom'
+import { showNotification } from '../../common/notification'
+import UserContext from '../../../contexts/userContext'
 
 const SignupContainer = styled(motion.div)`
     background-color: ${Colors.offwhite};
@@ -61,10 +64,25 @@ const fillupCurrency = (change_currency_options_list) => {
         })
 }
 
-export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, changeDisplayName }) {
+export default function Signup({ changeIsLoginDisplayed }) {
+
+    // Switches to Login panel
     const switchToLoginHandler = () => {
         changeIsLoginDisplayed(true)
     }
+
+    // User context
+    const { userContextState, fetchAndSetUserContextState } = useContext(UserContext)
+
+    // History from Router
+    const history = useHistory()
+
+    // Redirect to dashboard if user is already logged in
+    useEffect(() => {
+        if (userContextState.isLoggedIn) {
+            history.push("/dashboard")
+        }
+    }, [userContextState.isLoggedIn, history])
 
     // Handles filling up currency cc values
     const [currency_options_list, change_currency_options_list] = useState([])
@@ -75,9 +93,11 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
     // States for below purposes
     const [isRegisterStatusGreen, changeIsRegisterStatusGreen] = useState(false)
     const [registerStatus, changeRegisterStatus] = useState(null)
+    const [isButtonGreyedOut, changeIsButtonGreyedOut] = useState(false)
 
     // Handles making signup request    
     const signupHandler = () => {
+        changeIsButtonGreyedOut(true)
         fetch(("/api/register"), {
             credentials: "include",
             body: new FormData(document.querySelector("#signup-form")),
@@ -88,15 +108,19 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
                     if (response.ok) { // If registration was successful
                         changeIsRegisterStatusGreen(true)
                         changeRegisterStatus(responseJson.message)
-                        changeIsLoggedIn(true)
-                        document.location = responseJson.redirect
+                        fetchAndSetUserContextState().then(({displayName}) => {
+                            showNotification(`Welcome aboard, ${displayName}!`, "success")
+                            history.push("/dashboard")
+                        })
                     } else { // If registration was not successful
                         changeIsRegisterStatusGreen(false)
                         changeRegisterStatus(responseJson.message)
+                        changeIsButtonGreyedOut(false)
                     }
                 })
             })
             .catch((err) => {
+                changeIsButtonGreyedOut(false)
                 isRegisterStatusGreen(false)
                 changeRegisterStatus(err)
             })
@@ -115,19 +139,18 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
     })
 
     // Handles checking if "password" and "confirm password" matches
-    useEffect(() => {
-        document.querySelector("#pwd-cnf").addEventListener("input", (event) => {
-            if (document.querySelector("#pwd").value !== event.target.value) {
-                // If passwords do not match
-                changeIsRegisterStatusGreen(false)
-                changeRegisterStatus("Passwords do not match!")
-            } else {
-                // If passwords do match
-                changeIsRegisterStatusGreen(true)
-                changeRegisterStatus("Passwords match")
-            }
-        })
-    }, [])
+    const passwordsValidator = (event) => {
+        if (document.querySelector("#pwd").value !== event.target.value) {
+            // If passwords do not match
+            changeIsButtonGreyedOut(true)
+            changeIsRegisterStatusGreen(false)
+            changeRegisterStatus("Passwords do not match!")
+        } else {
+            // If passwords do match
+            changeIsRegisterStatusGreen(true)
+            changeRegisterStatus("Passwords match")
+        }
+    }
 
     return (
         <SignupContainer id="login-container" variants={signupContainerVariant}
@@ -139,14 +162,15 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
                 <Input name="name" type="text" placeholder="Your name" />
                 <Input name="email" type="text" placeholder="Email" />
                 <Input id="pwd" name="password" type="password" placeholder="Password" />
-                <Input id="pwd-cnf" type="password" placeholder="Confirm password" />
+                <Input id="pwd-cnf" type="password" placeholder="Confirm password"
+                    onChange={passwordsValidator} />
                 <div id="does-password-match" style={{
                     fontFamily: 'raleway',
                     fontSize: "12px",
                     userSelect: "none",
                     textAlign: "end",
                     margin: "0px 16px",
-                    color: (isRegisterStatusGreen ? Colors.greenPrimary : "red")
+                    color: (isRegisterStatusGreen ? Colors.primary : "red")
                 }}>
                     {registerStatus}
                 </div>
@@ -180,11 +204,11 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
                     margin: "8px",
                     width: "90%",
                     userSelect: "none",
-                    color: Colors.blackSecondary,
+                    color: Colors.black,
                     cursor: "pointer",
                     fontFamily: "oswald"
                 }}
-                whileHover={{ color: Colors.greenDarkPrimary }}
+                whileHover={{ color: Colors.primaryDark }}
                 onClick={switchToLoginHandler}>
                 Already have an account?
             </motion.div>
@@ -193,7 +217,7 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
                 style={{
                     alignSelf: "flex-end",
                     margin: "8px 16px 8px 0px",
-                    opacity: (isRegisterStatusGreen ? 1 : 0.6)
+                    opacity: (isButtonGreyedOut ? 1 : 0.6)
                 }} />
             <div id="read-privacy-policy" style={{
                 alignSelf: "flex-end",
@@ -201,14 +225,14 @@ export default function Signup({ changeIsLoginDisplayed, changeIsLoggedIn, chang
                 userSelect: "none",
                 paddingBottom: "4px"
             }}>
-                <motion.a href="/faq" style={{
+                <Link to="/faq" style={{
                     textDecoration: "none",
                     fontFamily: "raleway",
                     fontSize: "12px",
-                    color: Colors.blackSecondary
-                }} whileHover={{ color: Colors.greenDarkPrimary }}>
-                    What data is stored?
-                </motion.a>
+                    color: Colors.black
+                }} whileHover={{ color: Colors.primaryDark }}>
+                    What data gets stored?
+                </Link>
             </div>
         </SignupContainer>
     )

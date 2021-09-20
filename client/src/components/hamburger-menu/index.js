@@ -1,37 +1,43 @@
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
-import Colors from "../../colors"
-import { useEffect } from 'react'
+import {secondary, black, primaryDark, offwhite} from "../../colors"
+import { useEffect, useContext } from 'react'
 import { useAnimation } from 'framer-motion'
 import { easeOutCubicBezier } from '../../utils'
 import { Link } from 'react-router-dom'
+import UserContext from '../../contexts/userContext'
+import IsPhoneContext from '../../contexts/isPhoneContext'
 
-const HamburgerMenuContainer = styled(motion.div)`
+const HamburgerMenuContainer = styled(motion.div)
+`
     position: fixed;
     top: 0;
     right: 0;
     height: 100vh;
-    background-color: ${Colors.greenPrimary};
+    background-color: ${secondary};
     z-index: 3;
 `
 
-const MenuItemsContainer = styled(motion.div)`
+const MenuItemsContainer = styled(motion.div)
+`
     display: flex;
     flex-direction: column;
     width: 100%;
     margin: 64px 16px 0px 16px;
 `
 
-const MenuItem = styled(motion.div)`
+const MenuItem = styled(motion.div)
+`
     width: 100%;
     font-family: 'oswald';
-    color: ${Colors.offwhite};
+    color: ${black};
     padding: 4px;
 `
 
 const menuItemVariants = {
     whileHover: {
-        backgroundColor: Colors.greenDarkPrimary,
+        backgroundColor: primaryDark,
+        color: offwhite,
         transition: {
             duration: 0.8,
             ease: easeOutCubicBezier
@@ -70,7 +76,13 @@ const menuItemContentContainer = {
 }
 
 
-export default function HamburgerMenu({ isLoggedIn, isPhone, isMenuActivated, changeIsMenuActivated }) {
+export default function HamburgerMenu({ isMenuActivated, changeIsMenuActivated }) {
+
+    // Different user contexts (logged in state) generates different items in the menu
+    const { userContextState } = useContext(UserContext)
+
+    // For isPhone context
+    const isPhone = useContext(IsPhoneContext)
 
     const hamburgerMenuContainerVariants = {
         initial: {
@@ -113,18 +125,27 @@ export default function HamburgerMenu({ isLoggedIn, isPhone, isMenuActivated, ch
             }}>
             <MenuItemsContainer id="menu-items-container" animate={menuAnimation}
                 variants={menuItemContentContainer} initial="initial">
-                <Link to={isLoggedIn ? "/dashboard" : "/"} style={{ textDecoration: "none" }}>
+                <Link to={userContextState.isLoggedIn ? "/dashboard" : "/"} style={{ textDecoration: "none" }}>
                     <MenuItem className="hamburger-menu-item" variants={menuItemVariants}
                         whileHover="whileHover" style={{ fontSize: (isPhone ? "24px" : "28px") }}
                         whileTap="whileTap" onClick={closeMenuOnItemClickHandler}>
-                        {isLoggedIn ? "Dashboard" : "Home"}
+                        {userContextState.isLoggedIn ? "Dashboard" : "Home"}
                     </MenuItem>
                 </Link>
-                <Link to={isLoggedIn ? "/logout" : "/login_signup"} style={{ textDecoration: "none" }}>
+                {userContextState.isLoggedIn &&
+                    <Link to="/settings" style={{ textDecoration: "none" }}>
                     <MenuItem className="hamburger-menu-item" variants={menuItemVariants}
                         whileHover="whileHover" style={{ fontSize: (isPhone ? "24px" : "28px") }}
                         whileTap="whileTap" onClick={closeMenuOnItemClickHandler}>
-                        {isLoggedIn ? "Logout" : "Login/Signup"}
+                        Settings
+                    </MenuItem>
+                </Link>
+            }                
+                <Link to={userContextState.isLoggedIn ? "/logout" : "/login_signup"} style={{ textDecoration: "none" }}>
+                    <MenuItem className="hamburger-menu-item" variants={menuItemVariants}
+                        whileHover="whileHover" style={{ fontSize: (isPhone ? "24px" : "28px") }}
+                        whileTap="whileTap" onClick={closeMenuOnItemClickHandler}>
+                        {userContextState.isLoggedIn ? "Logout" : "Login/Signup"}
                     </MenuItem>
                 </Link>
                 <Link to="/know_more" style={{ textDecoration: "none" }}>

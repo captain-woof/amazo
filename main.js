@@ -40,18 +40,19 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
     app.use(session({
         secret: utils.getRandomHexString(32),
         store: MongoStore.create({
-            ttl: (24 * 3600), // 24 hours
-            client: mongo_connection.getClient()
+            autoRemove: 'native',
+            client: mongo_connection.getClient(),
+            touchAfter: 24 * 60 * 60 // 24 hours (time period in seconds)
         }),
-        name: "amazo_session",
+        name: "brown_track_session",
         cookie: {
             path: '/',
             httpOnly: true,
             secure: false,
-            maxAge: (24 * 3600) // 24 hours
+            maxAge: (24 * 60 * 60 * 1000) // 24 hours
         },
         resave: false,
-        saveUninitialized: true
+        saveUninitialized: false
     }))
 
     //// For routers
@@ -63,11 +64,20 @@ mongo_connection.once('open', () => { // If connection to Atlas succeeds
     //// For static files
     app.use(express.static(path.join(__dirname, "client", "build")))
     //// Starting server
-    app.listen(process.env.PORT || 8000, () => {
+    let listenPort = process.env.PORT || 8000
+    app.listen(listenPort, () => {
         console.log("Express backend started at 8000")
     })
 
     // For starting collection process
     // Interval: 24 hours
     setInterval(utils.collectAllProductPrices,24*60*60*1000)
+
+    // For removing expired password reset data
+    // Interval: 1 minute
+    setInterval(utils.removeExpiredPasswordResetData, 60*1000)
+
+    // For going through all products, and reporting to users if there product
+    // has the least price today
+    setInterval(utils.searchAndNotifyProductsWithMinPriceToday, 24*60*60*1000)
 })

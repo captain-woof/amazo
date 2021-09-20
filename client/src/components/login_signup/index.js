@@ -1,10 +1,13 @@
 import styled from 'styled-components'
-import { AnimatePresence, motion } from 'framer-motion'
-import { easeInOutCubicBezier } from "../../utils"
-import { useState } from 'react'
-import Login from './Login'
-import Signup from './Signup'
-import BackgroundImage from "../../static/images/login_register_background.jpg"
+import { AnimatePresence, motion, useAnimation } from 'framer-motion'
+import { easeInCubicBezier } from "../../utils"
+import { useState, useEffect } from 'react'
+import Login from './Login/index'
+import Signup from './Signup/index'
+import BackgroundImage from "../../static/images/background.jpg"
+import BackgroundCredits from '../common/background-credits'
+import { useContext } from 'react/cjs/react.development'
+import IsPhoneContext from '../../contexts/isPhoneContext'
 
 const LoginSignupContainer = styled(motion.div)`
     width: 100vw;
@@ -16,45 +19,61 @@ const LoginSignupContainer = styled(motion.div)`
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    background-position: ${({isPhone}) => (isPhone ? "0px -400px" : "0px -250px")};
 `
 
-const loginSignupContainerVariant = {
+const loginSignupContainerVariant = (isPhone) => ({
     initial: {
-        x: 200,
-        opacity: 0
+        x: "100vw",
     },
     animate: {
-        x: 0,
-        opacity: 1,
+        x: "0vw",
         transition: {
-            when: "beforeChildren",
+            ease: easeInCubicBezier,
             duration: 1,
             delayChildren: 0.4,
-            staggerChildren: 0.5
+            staggerChildren: 0.5,
+            when: "beforeChildren"
         }
     },
     exit: {
-        x: -200,
-        opacity: 0,
+        x: "-100vw",
         transition: {
-            ease: easeInOutCubicBezier,
+            ease: easeInCubicBezier,
             duration: 1
         }
+    },
+    keep_moving: {
+        backgroundPosition: [(isPhone ? "0px -400px" : "0px -250px"), "0px -600px", (isPhone ? "0px -400px" : "0px -250px")],
+        transition: {
+            duration: 42,
+            ease: "linear",
+            repeat: Infinity
+        }
     }
-}
+})
 
-export default function LoginSignup({ changeIsLoggedIn }) {
+export default function LoginSignup() {
     const [isLoginDisplayed, changeIsLoginDisplayed] = useState(true)
+    const isPhone = useContext(IsPhoneContext)
+
+    // Animating background
+    const animation = useAnimation()
+    useEffect(() => {
+        (async () => {
+            await animation.start("animate") // Appear on screen
+            animation.start("keep_moving") // Keep animating
+        })()        
+    }, [animation])
 
     return (
-        <LoginSignupContainer id="login-signup-container" variants={loginSignupContainerVariant}
-            animate="animate" exit="exit" initial="initial">
+        <LoginSignupContainer isPhone={isPhone} id="login-signup-container" variants={loginSignupContainerVariant(isPhone)} animate={animation} exit="exit" initial="initial">
+            <BackgroundCredits/>
             <AnimatePresence initial={false}>
                 {isLoginDisplayed ?
-                    <Login key="login-container" changeIsLoginDisplayed={changeIsLoginDisplayed}
-                        changeIsLoggedIn={changeIsLoggedIn} /> :
-                    <Signup key="signup-container" changeIsLoginDisplayed={changeIsLoginDisplayed}
-                        changeIsLoggedIn={changeIsLoggedIn} />}
+                    <Login key="login-container" changeIsLoginDisplayed={changeIsLoginDisplayed} /> :
+                    <Signup key="signup-container" changeIsLoginDisplayed={changeIsLoginDisplayed} />}
             </AnimatePresence>
         </LoginSignupContainer>
     )

@@ -1,42 +1,36 @@
 const mongoose = require('mongoose')
-const utils = require('../utils')
+const User = require('../models/user')
+const crypto = require('crypto')
 
 const changePasswordEntrySchema = new mongoose.Schema({
     userObjectId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    key: { type: String, required: true }
+    key: { type: String, required: true },
+    timestamp: { type: Date, required: true, default: Date.now() }
 })
 
-changePasswordEntrySchema.statics.createChangePasswordEntry = function (email) {
-    return new Promise((resolve, reject) => {
+changePasswordEntrySchema.statics.createChangePasswordEntry = async (email) => {
+    try {
         // Get userDoc associated with the email
-        User.findUserByEmail(email)
-            .then((userDoc) => {
-                if (!userDoc) {
-                    reject({ status: "ERROR", message: "No such user exists!" })
-                } else {
-                    // Check if entry already exists
-                    ChangePasswordEntry.findOne({ userObjectId: userDoc._id }, (changePasswordEntryDoc) => {
-                        if (changePasswordEntryDoc) {
-                            reject({ status: "ERROR", message: "Reset password request already stored!" })
-                        } else {
-                            // Now create the new password change entry
-                            var newChangePasswordEntryDoc = new ChangePasswordEntry({
-                                userObjectId: userDoc._id,
-                                key: utils.getRandomHexString(32)
-                            })
-                            newChangePasswordEntryDoc.save((err) => {
-                                if (err) {
-                                    reject({ status: "ERROR", message: err })
-                                } else {
-                                    resolve({ status: "OK", message: "Change Password Entry added!" })
-                                }
-                            })
-                        }
-                    })
-                }
+        let userDoc = await User.findUserByEmail(email)
+
+        // If no such user exists, ignore. Frontend does not need to know.
+        if (userDoc) {
+            // Check if entry already exists, delete the previous one if exists, then set new one
+            await ChangePasswordEntry.deleteOne({ userObjectId: userDoc._id })
+
+            // Now create the new password change entry
+            let resetKey = crypto.randomBytes(32 / 2).toString('hex')         
+            let newChangePasswordEntryDoc = new ChangePasswordEntry({
+                userObjectId: userDoc._id,
+                key: resetKey
             })
-            .catch((err) => { reject({ status: "ERROR", message: err }) })
-    })
+
+            await newChangePasswordEntryDoc.save()            
+            return { status: "OK", email: userDoc.email, name: userDoc.name, key: resetKey}
+        }
+    } catch (err) {
+        throw { status: "ERROR", message: err }
+    }
 }
 
 changePasswordEntrySchema.statics.validateChangePasswordEntry = function (email, key) {
@@ -44,11 +38,11 @@ changePasswordEntrySchema.statics.validateChangePasswordEntry = function (email,
         // Get userDoc associated with the email
         User.findUserByEmail(email)
             .then((userDoc) => {
-                if (!userDoc) { reject({ status: "ERROR", message: "No such user exists!" }) }
+                if (!userDoc) { reject({ status: "ERROR", message: "No such user exists!" }) } 
                 else {
                     ChangePasswordEntry.findOne({
-                        $and: [{ userObjectId: userDoc._id }, { key: key }]
-                    })
+                            $and: [{ userObjectId: userDoc._id }, { key: key }]
+                        })
                         .then((changePasswordEntryDoc) => {
                             if (!changePasswordEntryDoc) {
                                 // If validation failed

@@ -1,31 +1,31 @@
 {
-  "name": "amazo",
+  "name": "brown-track",
   "version": "1.0.0",
-  "description": "A price-tracker for Amazon; see how product prices fluctuate on Amazon and know the best time to buy. :)",
+  "description": "A price-tracker for Amazon; track how product prices fluctuate on Amazon and know the best time to buy. Brown-Track notifies you on your email when lowest prices are observed, making things even better!",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node main.js",
+    "start": "node --tls-min-v1.0 main.js",
     "dev": "concurrently -k \"npm run dev_backend\" \"npm run dev_frontend\"",
     "dev_backend": "nodemon --ignore 'client/*' .",
     "dev_frontend": "cd ./client/ && npm start"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/captain-woof/amazo.git"
+    "url": "git+https://github.com/captain-woof/brown-track.git"
   },
   "keywords": [
     "Amazon",
     "price",
     "tracker",
-    "amazo"
+    "brown-track"
   ],
   "author": "Sohail Saha (aka CaptainWoof)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/captain-woof/amazo/issues"
+    "url": "https://github.com/captain-woof/brown-track/issues"
   },
-  "homepage": "https://github.com/captain-woof/amazo#readme",
+  "homepage": "https://github.com/captain-woof/brown-track#readme",
   "dependencies": {
     "amazon-buddy": "^2.2.37",
     "connect-mongo": "^4.4.1",
@@ -34,8 +34,13 @@
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "formidable": "^1.2.2",
+    "moment": "^2.29.1",
     "mongoose": "^5.13.7",
-    "nodemailer": "^6.6.3"
+    "nodemailer": "^6.6.3",
+    "rc-resize-observer": "^1.0.1",
+    "react-toastify": "^8.0.2",
+    "react-waterfall-grid": "^1.2.0",
+    "use-merge-state": "^1.2.3"
   },
   "devDependencies": {
     "concurrently": "^6.2.1",
